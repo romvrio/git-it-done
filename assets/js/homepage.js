@@ -1,5 +1,35 @@
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
+var languageButtonsEl = document.querySelector("#language-buttons")
+var userFormEl = document.querySelector("#user-form");
+var nameInputEl = document.querySelector("#username");
+
+var formSubmitHandler = function (event) {
+    event.preventDefault();
+
+    // get value from input element
+    var username = nameInputEl.value.trim();
+    if (username) {
+        getUserRepos(username);
+        // clear the old content
+        repoContainerEl.textContent = "";
+        nameInputEl.value = "";
+    } else {
+        alert("please enter a Github username");
+    }
+    console.log(event);
+};
+
+var buttonClickHandler = function (event) {
+    // checks to see that the correct button is being targeted
+    var language = event.target.getAttribute("data-language");
+    if (language) {
+        getFeaturedRepos(language);
+
+        // clear old content 
+        repoContainerEl.textContent = "";
+    }
+};
 
 
 var getUserRepos = function (user) {
@@ -25,39 +55,30 @@ var getUserRepos = function (user) {
 
 };
 
-getUserRepos();
+var getFeaturedRepos = function (language) {
+    var apiUrl = "https://api.github.com/search/repositories?q=" + language + "+is:featured&sort=help-wanted-issues";
 
-var userFormEl = document.querySelector("#user-form");
-var nameInputEl = document.querySelector("#username");
+    fetch(apiUrl).then(function (response) {
+        // request was successful 
+        if (response.ok) {
+            response.json().then(function (data) {
+                displayRepos(data.items, language);
+            });
+        } else {
+            alert("Error: GitHub User Not Found");
+        }
+    });
+};
 
-var formSubmitHandler = function (event) {
-    event.preventDefault();
-
-    var username = nameInputEl.value.trim();
-    if (username) {
-        getUserRepos(username);
-        nameInputEl.value = "";
-    } else {
-        alert("please enter a Github username");
-    }
-
-    console.log(event);
-
-}
 
 var displayRepos = function (repos, searchTerm) {
-    console.log(repos);
-    console.log(searchTerm);
-    //clear put the old content
-    repoContainerEl.textContent = "";
-    repoSearchTerm.textContent = searchTerm;
-
     //check if api returned any repos
     if (repos.length === 0) {
         repoContainerEl.textContent = "No Repositories found.";
         return;
     }
 
+    repoSearchTerm.textContent = searchTerm;
     //loop over the repos
     for (var i = 0; i < repos.length; i++) {
         //format repo name
@@ -96,3 +117,4 @@ var displayRepos = function (repos, searchTerm) {
 };
 
 userFormEl.addEventListener("submit", formSubmitHandler);
+languageButtonsEl.addEventListener("click", buttonClickHandler)

@@ -92,4 +92,5 @@ var displayWarning = function (repo) {
     //append to the warning container
     limitWarningEl.appendChild(linkEl);
 };
+
 getRepoName();
